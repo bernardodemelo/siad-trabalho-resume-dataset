@@ -34,7 +34,7 @@ O projeto segue as seis fases da metodologia **CRISP-DM (Cross Industry Standard
 
 ---
 
-### 2. Data Understanding
+### 2. Data Understanding (até quinta)
 - Carregamento e exploração inicial dos dados (`read.csv`, `str`, `summary`, `skimr::skim`). [R & RELATÓRIO]
 - Identificação de variáveis numéricas e categóricas. [RELATÓRIO]
 - Análise da distribuição de `matched_score` (histogramas, boxplots). [R & RELATÓRIO]
