@@ -1,4 +1,3 @@
-print("Hello, World!")
 # This is the main script for the projetoSIAD project
 # Additional code and functionality will be added here
 # as the project develops.
@@ -10,7 +9,7 @@ library(ggplot2)
 # show all columns of resume_data.csv
 #its inside projetoSIAD/data folder
 resume_data <- read.csv("C:/Users/migue/Desktop/SIAD/projetoSIAD/resume_data.csv")
-print(colnames(resume_data))
+str((resume_data))
 
 # show first few rows of resume_data.csv
 

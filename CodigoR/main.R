@@ -5,7 +5,15 @@
 ########################################################################
 
 # --- Pacotes necessários ---
-# Instalar se necessário: install.packages(c("tidyverse","caret","randomForest","xgboost","text2vec","glmnet","recipes","rsample","vip"))
+# Packages
+packages <- c(
+  "tidyverse", "caret", "randomForest", "xgboost", 
+  "text2vec", "glmnet", "recipes", "rsample", "skimr", "vip"
+)
+
+# 2. Install the packages
+install.packages(packages)
+
 library(tidyverse)
 library(caret)
 library(randomForest)
@@ -14,7 +22,10 @@ library(text2vec)
 library(glmnet)
 library(recipes)
 library(rsample)
-library(vip)        # variable importance
+library(skimr)
+library(vip)
+
+# Definir seed data para reproducibilidade do script.
 set.seed(123)
 
 # --- 1. Business understanding (documentar) ---
@@ -23,17 +34,19 @@ set.seed(123)
 # --- 2. Data understanding ---
 df_raw <- resume_data
 
-# quick overview
+# Dimensão do Dataset. 
 cat("Dimensão:", dim(df_raw), "\n")
-glimpse(df_raw)
-summary(df_raw)
+
+# Sumário expandido com a função skim (já oferece os tipos de variáveis)
+skim(df_raw)
 
 # percentagem NA por coluna
-na_pct <- sapply(df_raw, function(x) mean(is.na(x)))*100
-na_pct_sorted <- sort(na_pct, decreasing = TRUE)
-print(na_pct_sorted)
+na_percentage <- sapply(df_raw, function(x) mean(is.na(x)))*100
+na_percentage_sorted <- sort(na_percentage, decreasing = TRUE)
+cat("% NAs / Column (Sorted):\n")
+print(na_percentage_sorted)
 
-# confirmar a variável alvo
+# confirmar a variável dependente ??? 
 table(is.na(df_raw$matched_score))
 df_raw$matched_score <- as.numeric(df_raw$matched_score)
 
