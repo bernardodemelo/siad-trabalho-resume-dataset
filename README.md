@@ -1,6 +1,7 @@
 # 🧠 Projeto SIAD – Previsão de `matched_score`
 
 ### 0. Estrutura do Repositório
+```bash
 ├── data/
 │   └── resume_data.csv              # Dataset utilizado
 ├── R/
@@ -15,6 +16,7 @@
 │   └── predictions_vs_actual.png    # Gráfico real vs previsto
 ├── modelo_final.rds                 # Modelo treinado
 └── README.md                        # Descrição do projeto
+```
 
 ## 📋 Descrição do Projeto
 Este projeto foi desenvolvido no âmbito da unidade curricular **Sistemas Inteligentes de Apoio à Decisão (SIAD)**, sob orientação do **Prof. Sérgio Moro**.  
