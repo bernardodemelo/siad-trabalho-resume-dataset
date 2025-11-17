@@ -124,15 +124,6 @@ df$age_max <- as.numeric(str_extract(df$age_requirement, "(?<=to )\\d{2}"))
 
 
 ########################################################
-# === 7. Converter colunas textuais para fatores ===
-########################################################
-# Identificamos colunas do tipo 'character' e transformamos em 'factor'
-# para que possam ser usadas em análises categóricas e modelação estatística.
-cols_texto <- names(df)[sapply(df, is.character)]
-df[cols_texto] <- lapply(df[cols_texto], factor)
-
-
-########################################################
 # === 8. Histogramas e Boxplots Extras ===
 ########################################################
 

@@ -11,6 +11,32 @@ tab_mode <- function(x) {
   ux[which.max(tabulate(match(x, ux)))]
 }
 
+# Criar features úteis para modelação
+# 1. Contagem de skills
+library(stringr)
+df$skills_count <- sapply(df$skills, function(x){
+  if(is.na(x)) return(0)
+  x <- gsub("\\[|\\]|'|\"", "", x)
+  length(unlist(strsplit(x, ",")))
+})
+# 2. Número de palavras em career objective
+df$career_word_count <- sapply(df$career_objective, function(x){
+  if(is.na(x)) return(0)
+  length(unlist(strsplit(x, "\\s+")))
+})
+# 3. Número de palavras em responsabilidades
+df$responsibilities_word_count <- sapply(df$responsibilities.1, function(x){
+  if(is.na(x)) return(0)
+  length(unlist(strsplit(x, "\\s+")))
+})
+# 4. Tamanho do CV em caracteres
+df$text_length_total <- apply(df, 1, function(row){
+  sum(nchar(paste(row, collapse=" ")), na.rm = TRUE)
+})
+# 5. Extrair idades de age_requirement
+df$age_min <- as.numeric(str_extract(df$age_requirement, "\\d{2}"))
+df$age_max <- as.numeric(str_extract(df$age_requirement, "(?<=to )\\d{2}"))
+
 # 1. Remover colunas com mais de 50% de valores em falta
 na_perc <- sapply(df, function(x) mean(is.na(x) | x == "N/A" | x == "None"))
 df <- df[, na_perc <= 0.5]
@@ -38,6 +64,21 @@ if (!require(caret)) {
   install.packages("caret", dependencies = TRUE)
 }
 library(caret)
+
+# Converter colunas de texto para factor
+cat_cols <- names(df)[sapply(df, function(x) is.character(x))]
+df[cat_cols] <- lapply(df[cat_cols], factor)
+
+# Remoção de outliers nas variáveis numéricas
+remove_outliers <- function(x) {
+  q1 <- quantile(x, 0.25, na.rm = TRUE)
+  q3 <- quantile(x, 0.75, na.rm = TRUE)
+  iqr <- q3 - q1
+  x[x < (q1 - 1.5 * iqr) | x > (q3 + 1.5 * iqr)] <- NA
+  return(x)
+}
+num_cols <- names(df)[sapply(df, is.numeric)]
+df[num_cols] <- lapply(df[num_cols], remove_outliers)
 
 # Codificação de variáveis categóricas
 cat_cols <- names(df)[sapply(df, function(x) is.character(x) | is.factor(x))]
