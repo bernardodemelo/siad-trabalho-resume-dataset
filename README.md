@@ -1,6 +1,7 @@
 # 🧠 Projeto SIAD – Previsão de `matched_score`
 
 ### 0. Estrutura do Repositório
+```bash
 ├── data/
 │   └── resume_data.csv              # Dataset utilizado
 ├── R/
@@ -15,6 +16,7 @@
 │   └── predictions_vs_actual.png    # Gráfico real vs previsto
 ├── modelo_final.rds                 # Modelo treinado
 └── README.md                        # Descrição do projeto
+```
 
 ## 📋 Descrição do Projeto
 Este projeto foi desenvolvido no âmbito da unidade curricular **Sistemas Inteligentes de Apoio à Decisão (SIAD)**, sob orientação do **Prof. Sérgio Moro**.  
@@ -26,7 +28,7 @@ O objetivo é aplicar a metodologia **CRISP-DM** para desenvolver um modelo de *
 
 O projeto segue as seis fases da metodologia **CRISP-DM (Cross Industry Standard Process for Data Mining)**:
 
-~~### 1. Business Understanding~~
+### 1. Business Understanding
 ~~- Definição do problema: prever `matched_score` a partir de características do dataset.~~
 ~~- Tipo de problema: **Regressão supervisionada**.~~
 ~~- Benefício esperado: apoiar processos de decisão relacionados com a qualidade do “matching” entre entidades.~~
@@ -34,26 +36,21 @@ O projeto segue as seis fases da metodologia **CRISP-DM (Cross Industry Standard
 
 ---
 
-### 2. Data Understanding (até quinta)
-- Carregamento e exploração inicial dos dados (`read.csv`, `str`, `summary`, `skimr::skim`). [R & RELATÓRIO]
-- Identificação de variáveis numéricas e categóricas. [RELATÓRIO]
-- Análise da distribuição de `matched_score` (histogramas, boxplots). [R & RELATÓRIO]
-- Verificação de **valores omissos** e **outliers**. [R & RELATÓRIO]
-- Análise de correlações (`cor`, `corrplot`, `ggcorrplot`). [R & RELATÓRIO]
+### 2. Data Understanding
+~~- Carregamento e exploração inicial dos dados (`read.csv`, `str`, `summary`, `skimr::skim`). [R & RELATÓRIO]~~
+~~- Identificação de variáveis numéricas e categóricas. [RELATÓRIO]~~
+~~- Análise da distribuição de `matched_score` (histogramas, boxplots). [R & RELATÓRIO]~~
+~~- Verificação de **valores omissos** e **outliers**. [R & RELATÓRIO]~~
+~~- Análise de correlações (`cor`, `corrplot`, `ggcorrplot`). [R & RELATÓRIO]~~
 
 ---
 
 ### 3. Data Preparation
-- Tratamento de valores em falta (remoção ou imputação).
-- Codificação de variáveis categóricas (`factor`, `caret::dummyVars`).
-- Normalização / padronização de variáveis numéricas (`scale`).
-- Seleção e engenharia de atributos (feature engineering).
-- Divisão dos dados em **treino (80%)** e **teste (20%)**:
-  ```r
-  set.seed(123)
-  index <- caret::createDataPartition(data$matched_score, p=0.8, list=FALSE)
-  train <- data[index, ]
-  test  <- data[-index, ]
+~~- Tratamento de valores em falta (remoção ou imputação).~~
+~~- Codificação de variáveis categóricas (`factor`, `caret::dummyVars`).~~
+~~- Normalização / padronização de variáveis numéricas (`scale`).~~
+~~- Seleção e engenharia de atributos (feature engineering).~~
+~~- Divisão dos dados em **treino (80%)** e **teste (20%)**~~
 
 ### 4. Modeling
 Treino de vários modelos supervisionados:
