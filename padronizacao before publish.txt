@@ -1,0 +1,47 @@
+# ============================================================
+# === Padronização e Correção de Skewness ===
+# ============================================================
+# Primeiro verificamos skewness e aplicamos Yeo-Johnson se necessário
+# Comentário: Yeo-Johnson é seguro para zeros e negativos, melhora normalidade
+library(bestNormalize)
+library(e1071)
+
+num_cols <- names(df_encoded)[sapply(df_encoded, is.numeric)]
+
+for (col in num_cols) {
+  skew_val <- skewness(df_encoded[[col]], na.rm = TRUE)
+  if (abs(skew_val) > 1) {
+    
+    norm_obj <- yeojohnson(df_encoded[[col]])
+    df_encoded[[col]] <- predict(norm_obj)
+  }
+}
+
+# Padronização final (Z-score)
+# Comentário: Garantimos média = 0 e desvio padrão = 1 para todas as variáveis numéricas
+df_encoded[num_cols] <- scale(df_encoded[num_cols])
+
+# ============================================================
+# === Guardar dataset final ===
+# ============================================================
+write.csv(df_encoded, "data/resume_data_final.csv", row.names = FALSE)
+
+# ============================================================
+# === Divisão dos dados em treino (80%) e teste (20%) ===
+# ============================================================
+set.seed(123)
+index <- caret::createDataPartition(df_encoded$matched_score, p = 0.8, list = FALSE)
+train <- df_encoded[index, ]
+test  <- df_encoded[-index, ]
+
+write.csv(train, "data/train.csv", row.names = FALSE)
+write.csv(test, "data/test.csv", row.names = FALSE)
+
+cat("Data preparation finalizada com:\n")
+cat("- Codificação categórica (dummy)\n")
+cat("- Correção de skewness (Yeo-Johnson)\n")
+cat("- Padronização (Z-score)\n")
+cat("- Novas features adicionadas\n")
+cat("- Split treino/teste concluído!\n")
+cat("data preparation finalizada com padronização, correção de skewness e novas features!\n")
+
