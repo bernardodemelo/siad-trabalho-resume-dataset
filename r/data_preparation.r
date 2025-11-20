@@ -13,7 +13,6 @@ tab_mode <- function(x) {
 
 # Criar features úteis para modelação
 # 1. Contagem de skills
-library(stringr)
 df$skills_count <- sapply(df$skills, function(x){
   if(is.na(x)) return(0)
   x <- gsub("\\[|\\]|'|\"", "", x)
@@ -58,13 +57,6 @@ for(col in names(df)) {
 total_na <- sum(is.na(df))
 cat("Valores NA restantes após tratamento:", total_na, "\n")
 
-# Instalação automática do pacote 'caret' caso não esteja instalado
-options(repos = c(CRAN = "https://cloud.r-project.org"))
-if (!require(caret)) {
-  install.packages("caret", dependencies = TRUE)
-}
-library(caret)
-
 # Converter colunas de texto para factor
 cat_cols <- names(df)[sapply(df, function(x) is.character(x))]
 df[cat_cols] <- lapply(df[cat_cols], factor)
@@ -95,20 +87,14 @@ df_encoded <- as.data.frame(predict(dummies, newdata = df))
 num_cols <- names(df_encoded)[sapply(df_encoded, is.numeric)]
 df_encoded[num_cols] <- lapply(df_encoded[num_cols], scale)
 
+# Definir percentagem de valores NA finais
+na_total <- mean(is.na(df_encoded)) * 100
+cat("Percentagem total de valores NA no dataset final:", round(na_total, 2), "%\n")
+
 # Guardar o dataset final normalizado e codificado antes da divisão
 write.csv(df_encoded, "data/resume_data_final.csv", row.names = FALSE)
 
 # Divisão dos dados em treino (80%) e teste (20%)
-set.seed(123)
 index <- caret::createDataPartition(df_encoded$matched_score, p=0.8, list=FALSE)
 train <- df_encoded[index, ]
 test  <- df_encoded[-index, ]
-
-write.csv(train, "data/train.csv", row.names = FALSE)
-write.csv(test, "data/test.csv", row.names = FALSE)
-
-cat("Data preparation finalizada!\n")
-cat("Codificação de variáveis categóricas concluída!\n")
-cat("Normalização de variáveis numéricas concluída!\n")
-cat("Divisão treino/teste concluída!\n")
-cat("Data preparation finalizada!\n")
