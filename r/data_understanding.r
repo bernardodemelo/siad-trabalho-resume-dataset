@@ -1,6 +1,22 @@
 ########################################################
 # === 1. Preparação do ambiente e pacotes necessários ===
 ########################################################
+# Instalar skrim se não tiver 
+
+# Função para instalar e carregar pacotes
+install_and_load <- function(pkg){
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg, dependencies = TRUE)
+    library(pkg, character.only = TRUE)
+  }
+}
+
+# Pacotes necessários
+packages <- c("skimr", "dplyr", "ggplot2")  # moments para skewness, dplyr para manipulação
+sapply(packages, install_and_load)
+
+# Encontrar o diretorio
+getwd()
 
 df_raw <-  read.csv("data/resume_data.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
@@ -20,9 +36,13 @@ print(na_percentage_sorted)
 table(is.na(df_raw$matched_score))
 
 # explorar distribuição do matched_score - Histograma
+
+windows()  # abrir nova janela
 hist(df_raw$matched_score, breaks = 30, main = "Distribuição matched_score", xlab = "matched_score")
 
 # descrição de outliers a partir do boxplot 
+
+windows()  # abrir nova janela
 boxplot(df_raw$matched_score, main="Boxplot matched_score", ylab="matched_score")
 
 # deteção de outliers a partir do critério de IQR (Intervalo Interquartil)
@@ -33,20 +53,24 @@ boxplot.stats(df_raw$matched_score)$out
 # === 3. Variável Dependente matched_score ===
 ########################################################
 
-df_raw$matched_score <- as.numeric(df$matched_score)
+df_raw$matched_score <- as.numeric(df_raw$matched_score)
 
 # numero em falta na var dependente
 cat("NAs em matched_score:", sum(is.na(df_raw$matched_score)), "\n")
 
-# Histograma
+windows()  # abrir nova janela
 hist(df_raw$matched_score, breaks = 30,
      main = "Distribuição matched_score",
-     col = "skyblue", xlab = "matched_score")
+     col = "skyblue", xlab = "matched_score", border="white")
+
 
 # Boxplot
-boxplot(df_raw$matched_score, main = "Boxplot matched_score",
+windows()  # abrir nova janela
+boxplot(df_raw$matched_score,
+        main = "Boxplot matched_score",
         col = "orange", ylab = "matched_score")
 
 # Outliers via IQR (interquartile range)
 outliers <- boxplot.stats(df_raw$matched_score)$out
 cat("Outliers detectados:", length(outliers), "\n")
+
