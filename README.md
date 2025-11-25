@@ -9,7 +9,8 @@
 │   ├── 02_data_preparation.R        # Preparação e limpeza
 │   ├── 03_modeling.R                # Modelação
 │   ├── 04_evaluation.R              # Avaliação de resultados
-│   └── 05_deployment.R              # Funções e modelo final
+│   ├── 05_deployment.R              # Funções e modelo final
+│   └── dependencies.R               # Dependencies
 ├── results/
 │   ├── metrics.csv                  # Métricas de desempenho
 │   ├── feature_importance.png       # Importância das variáveis
@@ -28,29 +29,26 @@ O objetivo é aplicar a metodologia **CRISP-DM** para desenvolver um modelo de *
 
 O projeto segue as seis fases da metodologia **CRISP-DM (Cross Industry Standard Process for Data Mining)**:
 
-### 1. Business Understanding
-~~- Definição do problema: prever `matched_score` a partir de características do dataset.~~
-~~- Tipo de problema: **Regressão supervisionada**.~~
-~~- Benefício esperado: apoiar processos de decisão relacionados com a qualidade do “matching” entre entidades.~~
-~~- Variável dependente: `matched_score`.~~
+ - Definição do problema: prever `matched_score` a partir de características do dataset.
+ - Tipo de problema: **Regressão supervisionada**.
+ - Benefício esperado: apoiar processos de decisão relacionados com a qualidade do “matching” entre entidades.
+ - Variável dependente: `matched_score`.
 
 ---
 
-### 2. Data Understanding
-~~- Carregamento e exploração inicial dos dados (`read.csv`, `str`, `summary`, `skimr::skim`). [R & RELATÓRIO]~~
-~~- Identificação de variáveis numéricas e categóricas. [RELATÓRIO]~~
-~~- Análise da distribuição de `matched_score` (histogramas, boxplots). [R & RELATÓRIO]~~
-~~- Verificação de **valores omissos** e **outliers**. [R & RELATÓRIO]~~
-~~- Análise de correlações (`cor`, `corrplot`, `ggcorrplot`). [R & RELATÓRIO]~~
+ - Carregamento e exploração inicial dos dados (`read.csv`, `str`, `summary`, `skimr::skim`). [R & RELATÓRIO]
+ - Identificação de variáveis numéricas e categóricas. [RELATÓRIO]
+ - Análise da distribuição de `matched_score` (histogramas, boxplots). [R & RELATÓRIO]
+ - Verificação de **valores omissos** e **outliers**. [R & RELATÓRIO]
+ - Análise de correlações (`cor`, `corrplot`, `ggcorrplot`). [R & RELATÓRIO]
 
 ---
 
-### 3. Data Preparation
-~~- Tratamento de valores em falta (remoção ou imputação).~~
-~~- Codificação de variáveis categóricas (`factor`, `caret::dummyVars`).~~
-~~- Normalização / padronização de variáveis numéricas (`scale`).~~
-~~- Seleção e engenharia de atributos (feature engineering).~~
-~~- Divisão dos dados em **treino (80%)** e **teste (20%)**~~
+ - Tratamento de valores em falta (remoção ou imputação).
+ - Codificação de variáveis categóricas (`factor`, `caret::dummyVars`).
+ - Normalização / padronização de variáveis numéricas (`scale`).
+ - Seleção e engenharia de atributos (feature engineering).
+ - Divisão dos dados em **treino (80%)** e **teste (20%)**
 
 ### 4. Modeling
 Treino de vários modelos supervisionados:

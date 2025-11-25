@@ -1,3 +1,5 @@
+# Carregar dependências e definir seed
+source("R/dependencies.R")
 ########################################################
 # === 2. Data Preparation: Tratamento de valores em falta ===
 ########################################################
@@ -113,13 +115,8 @@ test  <- df_encoded[-index, ]
 
 #num_cols <- names(df_encoded)[sapply(df_encoded, is.numeric)]
 
-#for (col in num_cols) {
-#  skew_val <- skewness(df_encoded[[col]], na.rm = TRUE)
- # if (abs(skew_val) > 1) {
-    
-  #  norm_obj <- yeojohnson(df_encoded[[col]])
-   # df_encoded[[col]] <- predict(norm_obj)
-  #}
+# Carregar dependências e definir seed
+source("R/dependencies.R")
 #}
 
 # Padronização final (Z-score)

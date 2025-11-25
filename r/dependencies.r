@@ -8,7 +8,7 @@ packages <- c(
 )
 
 # 2. Instalação de Pacotes
-install.packages(packages)
+install.packages(packages, repos = "https://cloud.r-project.org")
 
 library(tidyverse)
 library(caret)

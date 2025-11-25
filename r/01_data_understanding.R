@@ -1,19 +1,9 @@
+
 ########################################################
 # === 1. Preparação do ambiente e pacotes necessários ===
 ########################################################
-# Instalar skrim se não tiver 
-
-# Função para instalar e carregar pacotes
-install_and_load <- function(pkg){
-  if (!require(pkg, character.only = TRUE)) {
-    install.packages(pkg, dependencies = TRUE)
-    library(pkg, character.only = TRUE)
-  }
-}
-
-# Pacotes necessários
-packages <- c("skimr", "dplyr", "ggplot2")  # moments para skewness, dplyr para manipulação
-sapply(packages, install_and_load)
+# Carregar dependências e definir seed
+source("R/dependencies.R")
 
 # Encontrar o diretorio
 getwd()
