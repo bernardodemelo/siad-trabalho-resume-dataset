@@ -3,7 +3,7 @@
 # === 1. Preparação do ambiente e pacotes necessários ===
 ########################################################
 # Carregar dependências e definir seed
-source("R/dependencies.R")
+source("r/dependencies.R")
 
 # Encontrar o diretorio
 getwd()
