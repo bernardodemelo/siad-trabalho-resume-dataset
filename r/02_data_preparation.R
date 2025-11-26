@@ -1,19 +1,9 @@
 ########################################################
 # === 2. Data Preparation: Tratamento de valores em falta ===
 ########################################################
-# --- 1. Funções necessárias para instalar e executar o código ---
-if(!require(stringr)) install.packages("stringr")
+# Carregar dependências e definir seed
+source("r/dependencies.R")
 
-if(!require(caret)) install.packages("caret")
-library(caret)
-
-
-install_and_load <- function(pkg){
-  if (!require(pkg, character.only = TRUE)) {
-    install.packages(pkg, dependencies = TRUE)
-    library(pkg, character.only = TRUE)
-  }
-}
 # Encontrar o diretorio
 getwd()
 # Carregar o dataset
@@ -150,15 +140,8 @@ cat("Percentagem total de valores NA no dataset final:", round(na_total, 2), "%\
 write.csv(df_encoded, "data/resume_data_before_standardization.csv", row.names = FALSE)
 cat("Dados ANTES da padronização guardados em: data/resume_data_before_standardization.csv\n")
 
-# Divisão dos dados em treino (80%) e teste (20%)
-cat("1) NAs: ", sum(is.na(df_encoded$matched_score)), "\n")
-cat("2) NaNs:", sum(is.nan(df_encoded$matched_score)), "\n")
-cat("3) Structure:\n")
-str(df_encoded$matched_score)
-cat("4) Column exists?: ", "matched_score" %in% names(df_encoded), "\n")
-index <- caret::createDataPartition(df_encoded$matched_score, p=0.8, list=FALSE)
-train <- df_encoded[index, ]
-test  <- df_encoded[-index, ]
+# NOTA: A divisão treino/teste será feita DEPOIS da padronização
+# para garantir que ambos os conjuntos usam os mesmos parâmetros de padronização
 
 
 ########################################################
@@ -425,6 +408,31 @@ cat("Dataset guardado (RDS): 'data/resume_data_final_standardized.rds'\n")
 write.csv(df_standardized, "data/resume_data_final_standardized.csv", row.names = FALSE)
 cat("Dataset guardado (CSV): 'data/resume_data_final_standardized.csv'\n\n")
 
+# === ETAPA 6.5: DIVISÃO TREINO/TESTE E GUARDAR ===
+cat("=== ETAPA 6.5: Divisão em Treino (80%) e Teste (20%) ===\n")
+
+# Garantir que matched_score é numérico
+df_standardized[[target]] <- as.numeric(df_standardized[[target]])
+
+# Verificações antes da divisão
+cat("1) NAs em matched_score: ", sum(is.na(df_standardized[[target]])), "\n")
+cat("2) NaNs em matched_score:", sum(is.nan(df_standardized[[target]])), "\n")
+cat("3) Coluna matched_score existe?: ", target %in% names(df_standardized), "\n")
+
+# Divisão dos dados em treino (80%) e teste (20%)
+index <- caret::createDataPartition(df_standardized[[target]], p=0.8, list=FALSE)
+train <- df_standardized[index, ]
+test  <- df_standardized[-index, ]
+
+cat("Dimensões do conjunto de treino:", dim(train), "\n")
+cat("Dimensões do conjunto de teste:", dim(test), "\n\n")
+
+# Guardar conjuntos de treino e teste padronizados
+write.csv(train, "data/train.csv", row.names = FALSE)
+write.csv(test, "data/test.csv", row.names = FALSE)
+cat("Conjunto de TREINO guardado: 'data/train.csv'\n")
+cat("Conjunto de TESTE guardado: 'data/test.csv'\n\n")
+
 # === ETAPA 7: RELATÓRIO FINAL ===
 cat("========================================================\n")
 cat("              RELATÓRIO DE PADRONIZAÇÃO                \n")
@@ -441,7 +449,9 @@ cat("  2. data/yeo_johnson_transforms.rds\n")
 cat("  3. data/scaling_parameters.rds\n")
 cat("  4. data/resume_data_final_standardized.rds (DEPOIS)\n")
 cat("  5. data/resume_data_final_standardized.csv (DEPOIS)\n")
-cat("  6. outputs/padronizacao_comparacao.png\n")
+cat("  6. data/train.csv (CONJUNTO DE TREINO PADRONIZADO)\n")
+cat("  7. data/test.csv (CONJUNTO DE TESTE PADRONIZADO)\n")
+cat("  8. outputs/padronizacao_comparacao.png\n")
 cat("\n")
 cat("Status:PADRONIZAÇÃO CONCLUÍDA COM SUCESSO!\n")
 cat("========================================================\n\n")
