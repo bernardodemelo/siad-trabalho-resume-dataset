@@ -2,10 +2,11 @@
 # === 2. Data Preparation: Tratamento de valores em falta ===
 ########################################################
 # Carregar dependências e definir seed
-source("r/dependencies.R")
 
 # Encontrar o diretorio
 getwd()
+source("r/dependencies.R")
+
 # Carregar o dataset
 df <- read.csv("data/resume_data.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
@@ -90,20 +91,70 @@ num_cols_no_target <- setdiff(num_cols, target)
 
 df[num_cols_no_target] <- lapply(df[num_cols_no_target], remove_outliers)
 
-# Codificação de variáveis categóricas
+cat("\n=== CODIFICAÇÃO DE VARIÁVEIS CATEGÓRICAS ===\n")
+
+# Identificar variáveis categóricas (excluindo o target)
 cat_cols <- names(df)[sapply(df, function(x) is.character(x) | is.factor(x))]
-# Converter para factor
+cat_cols <- setdiff(cat_cols, target)  # Remover matched_score da lista
+
+cat("Total de variáveis categóricas:", length(cat_cols), "\n\n")
+
+# PASSO 1: Analisar cardinalidade (quantos níveis únicos cada variável tem)
+cat("Análise de Cardinalidade:\n")
+cat("-------------------------\n")
+high_cardinality_vars <- c()
+
 for(col in cat_cols) {
-  df[[col]] <- as.factor(df[[col]])
+  unique_vals <- length(unique(df[[col]]))
+  cat(sprintf("  %-30s : %5d níveis únicos\n", col, unique_vals))
+  
+  # REDUÇÃO DE CARDINALIDADE (importante para variáveis com muitos níveis)
+  # Se uma variável tem >50 categorias únicas, agrupa as menos frequentes
+  if(unique_vals > 50) {
+    high_cardinality_vars <- c(high_cardinality_vars, col)
+    
+    # Encontrar as 50 categorias mais frequentes
+    freq_table <- table(df[[col]])
+    top_levels <- names(sort(freq_table, decreasing = TRUE)[1:50])
+    
+    # Substituir as restantes por "Other"
+    df[[col]] <- ifelse(df[[col]] %in% top_levels, as.character(df[[col]]), "Other")
+    df[[col]] <- as.factor(df[[col]])
+    
+    cat(sprintf("    → REDUZIDO para 51 níveis (top 50 + 'Other')\n"))
+  }
 }
 
-# Codificação one-hot/dummy para todas as categóricas (exceto a variável dependente)
-predictors <- setdiff(names(df), target)
-dummies <- dummyVars(~ ., data = df[predictors], fullRank = TRUE)
-df_encoded <- as.data.frame(predict(dummies, newdata = df[predictors]))
+if(length(high_cardinality_vars) > 0) {
+  cat("\n⚠️ Variáveis com alta cardinalidade reduzidas:\n")
+  cat(paste("  -", high_cardinality_vars, collapse = "\n"), "\n")
+}
 
-# Adiciona a coluna target de volta
-df_encoded[[target]] <- df[[target]]
+cat("\n")
+
+# PASSO 2: Aplicar LABEL ENCODING
+cat("Aplicando Label Encoding...\n")
+cat("---------------------------\n")
+
+# Criar cópia do dataframe
+df_encoded <- df
+
+# Converter cada variável categórica para números inteiros
+# Exemplo: ["A", "B", "A", "C"] vira [1, 2, 1, 3]
+for(col in cat_cols) {
+  df_encoded[[col]] <- as.integer(as.factor(df_encoded[[col]]))
+  cat(sprintf("  ✓ %s convertida para inteiros\n", col))
+}
+
+cat("\n")
+cat("Dimensões após Label Encoding:", nrow(df_encoded), "linhas x", ncol(df_encoded), "colunas\n")
+cat("Tamanho em memória:", format(object.size(df_encoded), units = "MB"), "\n")
+
+# Comparação com One-Hot (para referência)
+cat("\n📊 Comparação Label vs One-Hot:\n")
+cat("  Label Encoding:  ", ncol(df_encoded), "colunas\n")
+cat("  One-Hot (estimado): ~", ncol(df_encoded) - length(cat_cols) + sum(sapply(df[cat_cols], function(x) length(unique(x)))), "colunas\n")
+cat("\n")
 
 # ============================================================================
 # Changes #1: Removi A normalização PREMATURA QUE ESTAVA AQUI
@@ -282,7 +333,7 @@ print(head(scaling_params, 5))
 cat("\n")
 
 # ============================================================================
-# MUDANÇA #5: APLICAR PADRONIZAÇÃO CORRETAMENTE
+# Changes #5: APLICAR PADRONIZAÇÃO CORRETAMENTE
 # Problema: scale() pode não funcionar bem com data.frames diretamente
 # Solução: Aplicar scale() e converter de volta para data.frame
 # ============================================================================
@@ -327,7 +378,7 @@ cat("Média geral de |skewness|:",
     round(mean(abs(stats_after$Skewness)), 3), "\n\n")
 
 # ============================================================================
-# MUDANÇA #6: ADICIONAR COMPARAÇÃO LADO A LADO
+# Changes #6: ADICIONAR COMPARAÇÃO LADO A LADO
 #
 # ============================================================================
 cat("=== COMPARAÇÃO ANTES vs DEPOIS (primeiras 5 variáveis) ===\n")
@@ -456,26 +507,235 @@ cat("\n")
 cat("Status:PADRONIZAÇÃO CONCLUÍDA COM SUCESSO!\n")
 cat("========================================================\n\n")
 
-# === EXEMPLO: Como aplicar no conjunto de TESTE ===
-cat("=== INSTRUÇÕES: Aplicar Padronização no Conjunto de Teste ===\n")
-cat("
-# Carregar parâmetros salvos
-norm_objs <- readRDS('data/yeo_johnson_transforms.rds')
-scaling_params <- readRDS('data/scaling_parameters.rds')
+########################################################
+# === Aplicar Padronização em Novos Dados de Teste ===
+########################################################
+# Este script aplica as mesmas transformações do treino
+# em novos dados (ex: dados futuros, validação externa)
 
-# Aplicar transformações Yeo-Johnson (se aplicável)
+cat("========================================================\n")
+cat("    APLICAÇÃO DE PADRONIZAÇÃO EM DADOS DE TESTE        \n")
+cat("========================================================\n\n")
+
+# === PASSO 1: CARREGAR PARÂMETROS SALVOS DO TREINO ===
+cat("=== PASSO 1: Carregando Parâmetros do Treino ===\n")
+
+# Carregar objetos de transformação Yeo-Johnson
+norm_objs <- readRDS('data/yeo_johnson_transforms.rds')
+cat("Transformações Yeo-Johnson carregadas:", length(norm_objs), "variáveis\n")
+
+# Carregar parâmetros de escalonamento (média e desvio padrão)
+scaling_params <- readRDS('data/scaling_parameters.rds')
+cat("Parâmetros de escalonamento carregados:", nrow(scaling_params), "variáveis\n")
+
+cat("\nPrimeiros 5 parâmetros de escalonamento:\n")
+print(head(scaling_params, 5))
+cat("\n")
+
+# === PASSO 2: CARREGAR DADOS DE TESTE ===
+cat("=== PASSO 2: Carregando Dados de Teste ===\n")
+
+# Opção A: Carregar o conjunto de teste já dividido
+test <- read.csv("data/test.csv", stringsAsFactors = FALSE)
+cat("Dados de teste carregados:", nrow(test), "linhas x", ncol(test), "colunas\n")
+
+# Opção B: Se tiver novos dados para processar (descomente se necessário)
+# test <- read.csv("data/novos_dados.csv", stringsAsFactors = FALSE)
+# NOTA: Os novos dados devem ter as MESMAS colunas que os dados de treino!
+
+cat("\n")
+
+# === PASSO 3: VERIFICAÇÕES INICIAIS ===
+cat("=== PASSO 3: Verificações de Integridade ===\n")
+
+# Verificar se as colunas necessárias existem
+missing_yj_cols <- setdiff(names(norm_objs), names(test))
+missing_scale_cols <- setdiff(scaling_params$Variable, names(test))
+
+if(length(missing_yj_cols) > 0) {
+  cat("Colunas Yeo-Johnson ausentes no teste:\n")
+  print(missing_yj_cols)
+}
+
+if(length(missing_scale_cols) > 0) {
+  cat("Colunas de escalonamento ausentes no teste:\n")
+  print(missing_scale_cols)
+}
+
+# Verificar NAs antes do processamento
+na_count_before <- sum(is.na(test))
+cat("NAs nos dados de teste ANTES do processamento:", na_count_before, "\n\n")
+
+# === PASSO 4: APLICAR TRANSFORMAÇÕES YEO-JOHNSON ===
+cat("=== PASSO 4: Aplicando Transformações Yeo-Johnson ===\n")
+cat("(Apenas para variáveis que foram transformadas no treino)\n\n")
+
+yj_applied <- 0
 for(col in names(norm_objs)){
   if(col %in% names(test)){
+    # Verificar se a coluna tem dados válidos
+    if(all(is.na(test[[col]]))) {
+      cat(sprintf("%-30s | Todos os valores são NA - ignorada\n", col))
+      next
+    }
+    
+    # Aplicar a transformação Yeo-Johnson usando o objeto do treino
     test[[col]] <- predict(norm_objs[[col]], test[[col]])
+    yj_applied <- yj_applied + 1
+    cat(sprintf("%-30s | Transformação aplicada\n", col))
+  } else {
+    cat(sprintf("%-30s | Coluna não encontrada no teste\n", col))
   }
 }
 
-# Aplicar padronização Z-score usando parâmetros do TREINO
+cat("\nResumo Yeo-Johnson:\n")
+cat("  - Variáveis transformadas:", yj_applied, "de", length(norm_objs), "\n\n")
+
+# === PASSO 5: APLICAR PADRONIZAÇÃO Z-SCORE ===
+cat("=== PASSO 5: Aplicando Padronização Z-Score ===\n")
+cat("Usando média e desvio padrão do conjunto de TREINO\n\n")
+
+scaled_applied <- 0
 for(i in 1:nrow(scaling_params)){
   var <- scaling_params$Variable[i]
+  
   if(var %in% names(test)){
-    test[[var]] <- (test[[var]] - scaling_params$Mean[i]) / scaling_params$SD[i]
+    # Verificar se a coluna tem dados válidos
+    if(all(is.na(test[[var]]))) {
+      cat(sprintf("%-30s | Todos os valores são NA - ignorada\n", var))
+      next
+    }
+    
+    # Aplicar padronização: z = (x - μ) / σ
+    mean_train <- scaling_params$Mean[i]
+    sd_train <- scaling_params$SD[i]
+    
+    # Proteção contra divisão por zero
+    if(sd_train == 0 || is.na(sd_train)) {
+      cat(sprintf("%-30s | SD=0 no treino - ignorada\n", var))
+      next
+    }
+    
+    test[[var]] <- (test[[var]] - mean_train) / sd_train
+    scaled_applied <- scaled_applied + 1
+    cat(sprintf("%-30s | μ=%.3f, σ=%.3f\n", var, mean_train, sd_train))
+  } else {
+    cat(sprintf("%-30s | Coluna não encontrada no teste\n", var))
   }
 }
+
+cat("\nResumo Padronização:\n")
+cat("  - Variáveis padronizadas:", scaled_applied, "de", nrow(scaling_params), "\n\n")
+
+# === PASSO 6: DIAGNÓSTICO PÓS-PADRONIZAÇÃO ===
+cat("=== PASSO 6: Diagnóstico dos Dados Padronizados ===\n")
+
+# Selecionar apenas as variáveis numéricas padronizadas
+num_cols_test <- intersect(scaling_params$Variable, names(test))
+
+if(length(num_cols_test) > 0) {
+  stats_test <- data.frame(
+    Variable = num_cols_test,
+    Mean = sapply(test[num_cols_test], mean, na.rm = TRUE),
+    SD = sapply(test[num_cols_test], sd, na.rm = TRUE),
+    Min = sapply(test[num_cols_test], min, na.rm = TRUE),
+    Max = sapply(test[num_cols_test], max, na.rm = TRUE),
+    NAs = sapply(test[num_cols_test], function(x) sum(is.na(x)))
+  )
+  rownames(stats_test) <- NULL
+  
+  cat("Estatísticas dos dados de teste padronizados (primeiras 10 variáveis):\n")
+  print(head(stats_test, 10))
+  cat("\n")
+  
+  # Verificação de qualidade
+  cat("Verificação de Qualidade:\n")
+  mean_range <- range(stats_test$Mean[is.finite(stats_test$Mean)])
+  sd_range <- range(stats_test$SD[is.finite(stats_test$SD)])
+  
+  cat("  - Range de médias: [", round(mean_range[1], 3), ",", round(mean_range[2], 3), "]\n")
+  cat("  - Range de SDs: [", round(sd_range[1], 3), ",", round(sd_range[2], 3), "]\n")
+  cat("  - Total de NAs:", sum(stats_test$NAs), "\n")
+  
+  # Alerta se as estatísticas estão muito diferentes do esperado
+  if(abs(median(stats_test$Mean, na.rm = TRUE)) > 0.5) {
+    cat("\n ATENÇÃO: Média mediana do teste está longe de 0!\n")
+    cat("   Isto pode indicar que os dados de teste são muito diferentes do treino.\n")
+  }
+  if(abs(median(stats_test$SD, na.rm = TRUE) - 1) > 0.5) {
+    cat("\n ATENÇÃO: SD mediano do teste está longe de 1!\n")
+    cat("   Isto pode indicar que os dados de teste são muito diferentes do treino.\n")
+  }
+} else {
+  cat(" Nenhuma variável numérica encontrada para diagnóstico.\n")
+}
+
+
+# === PASSO 7: TRATAMENTO DE NAs REMANESCENTES ===
+cat("=== PASSO 7: Verificação Final de NAs ===\n")
+
+na_count_after <- sum(is.na(test))
+cat("NAs nos dados de teste DEPOIS do processamento:", na_count_after, "\n")
+
+if(na_count_after > 0) {
+  cat("\n Ainda existem", na_count_after, "valores NA!\n")
+  cat("Colunas com NAs:\n")
+  
+  na_summary <- sapply(test, function(x) sum(is.na(x)))
+  na_cols <- names(na_summary[na_summary > 0])
+  
+  for(col in na_cols) {
+    cat(sprintf("  - %-30s : %d NAs\n", col, na_summary[col]))
+  }
+  
+  cat("\nRecomendação: Considere imputar estes valores antes da predição.\n")
+}
+
+cat("\n")
+
+# === PASSO 8: GUARDAR DADOS PROCESSADOS ===
+cat("=== PASSO 8: Guardar Dados de Teste Padronizados ===\n")
+
+# Guardar em RDS (mais eficiente)
+saveRDS(test, "data/test_padronizado.rds")
+cat(" Dados guardados (RDS): 'data/test_padronizado.rds'\n")
+
+# Guardar em CSV (para inspeção manual)
+write.csv(test, "data/test_padronizado.csv", row.names = FALSE)
+cat("Dados guardados (CSV): 'data/test_padronizado.csv'\n")
+
+cat("Tamanho final:", format(object.size(test), units = "MB"), "\n\n")
+
+# === RELATÓRIO FINAL ===
+cat("========================================================\n")
+cat("              RELATÓRIO DE PROCESSAMENTO                \n")
+cat("========================================================\n")
+cat("Dados de teste processados:", nrow(test), "linhas x", ncol(test), "colunas\n")
+cat("Transformações Yeo-Johnson aplicadas:", yj_applied, "variáveis\n")
+cat("Padronizações Z-score aplicadas:", scaled_applied, "variáveis\n")
+cat("NAs finais:", na_count_after, "\n")
+cat("\n")
+cat("Status: PROCESSAMENTO CONCLUÍDO!\n")
+cat("Os dados estão prontos para predição.\n")
+cat("========================================================\n\n")
+
+# === EXEMPLO DE USO PARA PREDIÇÃO ===
+cat("=== EXEMPLO: Como Usar os Dados Padronizados ===\n")
+cat("
+# Carregar dados padronizados
+test_padronizado <- readRDS('data/test_padronizado.rds')
+
+# Carregar modelo treinado (exemplo)
+# modelo <- readRDS('models/modelo_random_forest.rds')
+
+# Fazer predições
+# predicoes <- predict(modelo, newdata = test_padronizado)
+
+# Avaliar resultados
+# if('matched_score' %in% names(test_padronizado)) {
+#   rmse <- sqrt(mean((predicoes - test_padronizado$matched_score)^2))
+#   cat('RMSE:', rmse, '\\n')
+# }
 \n")
 cat("========================================================\n")
+
