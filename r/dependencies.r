@@ -13,7 +13,7 @@ packages <- c(
   "tidyverse", "caret", "randomForest", "xgboost", 
   "text2vec", "glmnet", "recipes", "rsample", "skimr", "vip", "caret", 
   "skimr", "stringr", "corrplot", "dplyr", "bestNormalize", "moments", 
-  "gridExtra", "ggplot2"
+  "gridExtra", "ggplot2", "pastecs"
 )
 
 # 2. Instalação de Pacotes
@@ -34,6 +34,7 @@ library(stringr)
 library(skimr)
 library(corrplot)
 library(dplyr)
+library(pastecs)
 
 # Definir seed data para reproducibilidade do script.
 set.seed(123)
