@@ -4,12 +4,13 @@
 ```bash
 ├── data/
 │   └── resume_data.csv              # Dataset utilizado
-├── R/
+├── r/
 │   ├── 01_data_understanding.R      # Análise exploratória
 │   ├── 02_data_preparation.R        # Preparação e limpeza
-│   ├── 03_modeling.R                # Modelação
+│   ├── 03_modeling.R                # Modelação baseline
+│   ├── 03b_modeling_improved.R      # Modelação optimizada
 │   ├── 04_evaluation.R              # Avaliação de resultados
-│   ├── 05_deployment.R              # Funções e modelo final
+│   ├── 05_others.R                  # Funções e modelo final
 │   └── dependencies.R               # Dependencies
 ├── results/
 │   ├── metrics.csv                  # Métricas de desempenho
@@ -22,6 +23,25 @@
 ## 📋 Descrição do Projeto
 Este projeto foi desenvolvido no âmbito da unidade curricular **Sistemas Inteligentes de Apoio à Decisão (SIAD)**, sob orientação do **Prof. Sérgio Moro**.  
 O objetivo é aplicar a metodologia **CRISP-DM** para desenvolver um modelo de **aprendizagem supervisionada** em **R**, capaz de **prever o valor da variável `matched_score`** com base nas restantes variáveis do dataset.
+
+## 🚀 Quick Start
+
+### Executar Modelação Melhorada
+```r
+# Opção 1: Launcher interativo
+source("run_models.R")
+
+# Opção 2: Teste rápido direto (5-10 min)
+source("r/03c_modeling_quick_test.R")
+
+# Opção 3: Versão completa (45-90 min)
+source("r/03b_modeling_improved.R")
+```
+
+### Documentação
+- 📖 `SUMARIO_MELHORIAS.md` - Visão geral das melhorias
+- 📘 `GUIA_ITERACAO.md` - Guia detalhado de execução
+- 📄 `README.md` - Este ficheiro
 
 ---
 
@@ -51,7 +71,8 @@ O projeto segue as seis fases da metodologia **CRISP-DM (Cross Industry Standard
  - Divisão dos dados em **treino (80%)** e **teste (20%)**
 
 ### 4. Modeling
-Treino de vários modelos supervisionados:
+**Fase 1 - Baseline (03_modeling.R):**
+Treino de modelos base:
 - Regressão Linear (lm)
 - Random Forest (randomForest)
 - Gradient Boosting (xgboost)
@@ -59,7 +80,15 @@ Treino de vários modelos supervisionados:
 
 Utilização de validação cruzada com caret::trainControl().
 
-Comparação dos modelos com base em métricas de regressão (RMSE, MAE, R²). [R & REALTÓRIO]
+**Fase 2 - Optimização (03b_modeling_improved.R):**
+Melhorias implementadas:
+- Hyperparameter tuning extensivo com grid search
+- Novos modelos: SVM, GBM
+- Ensemble methods: stacking e média ponderada
+- Validação cruzada com 10 folds
+- Feature importance analysis
+
+Comparação dos modelos com base em métricas de regressão (RMSE, MAE, R²). [R & RELATÓRIO]
 
 Justificação da escolha do modelo final. [RELATÓRIO]
 
@@ -74,15 +103,26 @@ Visualização:
 
 Comparação dos desempenhos dos modelos testados.
 
-### 6. Deployment [R & RELATÓRIO]
+### 6. Others [R & RELATÓRIO]
 Guardar o modelo final para utilização futura:
-- saveRDS(model_rf, "modelo_final.rds")
+- saveRDS(modelo_final, "modelo_final.rds")
+- O modelo é guardado automaticamente no script de modelação
 
-Criar uma função de previsão:
-- prever_score <- function(novo_dado) {
-  modelo <- readRDS("modelo_final.rds")
-  predict(modelo, newdata = novo_dado)
-}
+Criar funções de previsão:
+
+**1. Função básica de previsão (`prever_score`)**:
+- Carrega modelo treinado (.rds)
+- Aplica transformações Yeo-Johnson e padronização
+- Retorna vetor de previsões
+- Validações de entrada e tratamento de erros
+
+**2. Função avançada com avaliação (`prever_e_avaliar`)**:
+- Previsões + análise de desvios quando valores reais disponíveis
+- Métricas: RMSE, MAE, MAPE, R², Correlação
+- Estatísticas dos desvios (min, Q1, mediana, média, Q3, max, SD)
+- Identificação dos Top 10 casos com maior desvio
+- Gráficos automáticos: Previsto vs Real, Residuais, Q-Q plot, Histograma de resíduos
+- Teste automático com primeiras 100 observações do conjunto de teste
 
 Descrição de possíveis formas de integração do modelo num sistema real (API, dashboard, etc.).
 

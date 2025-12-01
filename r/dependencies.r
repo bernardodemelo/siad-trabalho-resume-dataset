@@ -13,7 +13,7 @@ packages <- c(
   "tidyverse", "caret", "randomForest", "xgboost", 
   "text2vec", "glmnet", "recipes", "rsample", "skimr", "vip", "caret", 
   "skimr", "stringr", "corrplot", "dplyr", "bestNormalize", "moments", 
-  "gridExtra", "ggplot2", "pastecs"
+  "gridExtra", "ggplot2", "pastecs", "gbm", "kernlab"
 )
 
 # 2. Instalação de Pacotes
