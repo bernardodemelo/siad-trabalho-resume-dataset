@@ -721,7 +721,7 @@ Foram criados scripts adicionais para melhorar o desempenho do modelo:
 |----------|---------|------------|-------------------|---------|-------------|
 | **Original** | 02 → 03 | 40 | Básicas | Linear, RF, XGBoost, GLMNet | 0.417 |
 | **Improved Multi** | 02b → 03b | 41 | 6 compostas | XGBoost, RF, GBM, SVM, Ensemble | 0.436 |
-| **Improved RF** | 02b → 03c | 41 | 6 compostas | RF tuning extensivo | A determinar |
+| **Improved RF** | 02b → 03c | 41 | 6 compostas | RF tuning extensivo | 0.534 |
 
 ---
 
