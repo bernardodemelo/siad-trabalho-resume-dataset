@@ -24,23 +24,9 @@
 Este projeto foi desenvolvido no âmbito da unidade curricular **Sistemas Inteligentes de Apoio à Decisão (SIAD)**, sob orientação do **Prof. Sérgio Moro**.  
 O objetivo é aplicar a metodologia **CRISP-DM** para desenvolver um modelo de **aprendizagem supervisionada** em **R**, capaz de **prever o valor da variável `matched_score`** com base nas restantes variáveis do dataset.
 
-## 🚀 Quick Start
-
-### Executar Modelação Melhorada
-```r
-# Opção 1: Launcher interativo
-source("run_models.R")
-
-# Opção 2: Teste rápido direto (5-10 min)
-source("r/03c_modeling_quick_test.R")
-
-# Opção 3: Versão completa (45-90 min)
-source("r/03b_modeling_improved.R")
 ```
 
 ### Documentação
-- 📖 `SUMARIO_MELHORIAS.md` - Visão geral das melhorias
-- 📘 `GUIA_ITERACAO.md` - Guia detalhado de execução
 - 📄 `README.md` - Este ficheiro
 
 ---
