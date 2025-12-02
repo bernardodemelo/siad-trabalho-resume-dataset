@@ -61,7 +61,24 @@ prever_score <- function(novo_dado, modelo_path = "modelo_final.rds") {
     if(file.exists("data/yeo_johnson_transforms.rds")) {
       yj_transforms <- readRDS("data/yeo_johnson_transforms.rds")
       cat("[INFO] A aplicar transformações Yeo-Johnson...\n")
-      novo_dado <- predict(yj_transforms, novo_dado)
+      
+      # Aplicar cada transformação usando a função yeojohnson do bestNormalize
+      for(var_name in names(yj_transforms)) {
+        if(var_name %in% names(novo_dado)) {
+          transform_obj <- yj_transforms[[var_name]]
+          lambda <- transform_obj$lambda
+          
+          # Aplicar transformação Yeo-Johnson manualmente
+          x <- novo_dado[[var_name]]
+          if(lambda != 0) {
+            x_pos <- ifelse(x >= 0, ((x + 1)^lambda - 1) / lambda, NA)
+            x_neg <- ifelse(x < 0, -((-x + 1)^(2 - lambda) - 1) / (2 - lambda), NA)
+            novo_dado[[var_name]] <- ifelse(x >= 0, x_pos, x_neg)
+          } else {
+            novo_dado[[var_name]] <- ifelse(x >= 0, log(x + 1), -log(-x + 1))
+          }
+        }
+      }
     }
     
     # Padronizar variáveis numéricas
