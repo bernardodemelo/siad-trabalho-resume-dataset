@@ -39,6 +39,16 @@ cat("[INFO] Dimensões: Treino =", nrow(train), "x", ncol(train),
     "| Teste =", nrow(test), "x", ncol(test), "\n\n")
 
 # ============================================================
+# ATIVAR PARALELIZAÇÃO
+# ============================================================
+cores <- detectCores() - 1
+if(cores < 1) cores <- 1  # Garantir pelo menos 1 core
+
+cl <- makePSOCKcluster(cores)
+registerDoParallel(cl)
+cat(">>> Utilizando", cores, "núcleos do processador em paralelo.\n\n")
+
+# ============================================================
 # CONFIGURAÇÃO DO TUNING
 # ============================================================
 
@@ -312,6 +322,13 @@ cat("[INFO] Métricas guardadas: results/metrics_03c_improvement.csv\n")
 
 write.csv(results_fine, "results/tuning_results_03c_improvement.csv", row.names = FALSE)
 cat("[INFO] Resultados de tuning: results/tuning_results_03c_improvement.csv\n")
+
+# ============================================================
+# DESATIVAR PARALELIZAÇÃO
+# ============================================================
+stopCluster(cl)
+registerDoSEQ()
+cat("\n[INFO] Cluster paralelo encerrado.\n")
 
 cat("\n========================================================\n")
 cat("              TUNING CONCLUÍDO                          \n")
